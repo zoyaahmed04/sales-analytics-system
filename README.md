@@ -37,4 +37,7 @@ The system prints:
 - Invalid records removed
 - Valid records after cleaning
 
+Note: Output files are generated when the program is executed.
+
+
 Cleaned sales data is saved in the output folder.
