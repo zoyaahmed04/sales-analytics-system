@@ -48,6 +48,8 @@ def parse_transactions(raw_lines):
         transactions.append(transaction)
 
     return transactions
+
+
 def validate_and_filter(transactions, region=None, min_amount=None, max_amount=None):
     """
     Validates transactions and applies optional filters
@@ -124,11 +126,13 @@ def validate_and_filter(transactions, region=None, min_amount=None, max_amount=N
 
     return filtered, invalid_count, summary
 
+
 def calculate_total_revenue(transactions):
     total = 0.0
     for tx in transactions:
         total += tx["Quantity"] * tx["UnitPrice"]
     return total
+
 
 def region_wise_sales(transactions):
     region_data = {}
@@ -162,6 +166,7 @@ def region_wise_sales(transactions):
 
     return sorted_regions
 
+
 def top_selling_products(transactions, n=5):
     product_data = {}
 
@@ -187,6 +192,7 @@ def top_selling_products(transactions, n=5):
     result.sort(key=lambda x: x[1], reverse=True)
 
     return result[:n]
+
 
 def customer_analysis(transactions):
     customer_data = {}
@@ -226,6 +232,7 @@ def customer_analysis(transactions):
 
     return sorted_customers
 
+
 def daily_sales_trend(transactions):
     daily_data = {}
 
@@ -256,6 +263,7 @@ def daily_sales_trend(transactions):
 
     return result
 
+
 def find_peak_sales_day(transactions):
     daily = daily_sales_trend(transactions)
 
@@ -270,6 +278,7 @@ def find_peak_sales_day(transactions):
             tx_count = data["transaction_count"]
 
     return (peak_date, max_revenue, tx_count)
+
 
 def low_performing_products(transactions, threshold=10):
     product_data = {}
