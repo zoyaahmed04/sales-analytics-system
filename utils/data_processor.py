@@ -121,3 +121,178 @@ def validate_and_filter(transactions, region=None, min_amount=None, max_amount=N
     }
 
     return filtered, invalid_count, summary
+
+def calculate_total_revenue(transactions):
+    total = 0.0
+    for tx in transactions:
+        total += tx["Quantity"] * tx["UnitPrice"]
+    return total
+
+def region_wise_sales(transactions):
+    region_data = {}
+    total_revenue = calculate_total_revenue(transactions)
+
+    for tx in transactions:
+        region = tx["Region"]
+        amount = tx["Quantity"] * tx["UnitPrice"]
+
+        if region not in region_data:
+            region_data[region] = {
+                "total_sales": 0.0,
+                "transaction_count": 0
+            }
+
+        region_data[region]["total_sales"] += amount
+        region_data[region]["transaction_count"] += 1
+
+    # Calculate percentages
+    for region in region_data:
+        region_data[region]["percentage"] = round(
+            (region_data[region]["total_sales"] / total_revenue) * 100, 2
+        )
+
+    # Sort by total_sales descending
+    sorted_regions = dict(
+        sorted(region_data.items(),
+               key=lambda x: x[1]["total_sales"],
+               reverse=True)
+    )
+
+    return sorted_regions
+
+def top_selling_products(transactions, n=5):
+    product_data = {}
+
+    for tx in transactions:
+        product = tx["ProductName"]
+        qty = tx["Quantity"]
+        amount = qty * tx["UnitPrice"]
+
+        if product not in product_data:
+            product_data[product] = {
+                "quantity": 0,
+                "revenue": 0.0
+            }
+
+        product_data[product]["quantity"] += qty
+        product_data[product]["revenue"] += amount
+
+    result = []
+    for product, data in product_data.items():
+        result.append((product, data["quantity"], data["revenue"]))
+
+    # Sort by quantity sold descending
+    result.sort(key=lambda x: x[1], reverse=True)
+
+    return result[:n]
+
+def customer_analysis(transactions):
+    customer_data = {}
+
+    for tx in transactions:
+        cid = tx["CustomerID"]
+        amount = tx["Quantity"] * tx["UnitPrice"]
+        product = tx["ProductName"]
+
+        if cid not in customer_data:
+            customer_data[cid] = {
+                "total_spent": 0.0,
+                "purchase_count": 0,
+                "products_bought": set()
+            }
+
+        customer_data[cid]["total_spent"] += amount
+        customer_data[cid]["purchase_count"] += 1
+        customer_data[cid]["products_bought"].add(product)
+
+    # Final formatting
+    for cid in customer_data:
+        total = customer_data[cid]["total_spent"]
+        count = customer_data[cid]["purchase_count"]
+
+        customer_data[cid]["avg_order_value"] = round(total / count, 2)
+        customer_data[cid]["products_bought"] = list(
+            customer_data[cid]["products_bought"]
+        )
+
+    # Sort by total_spent descending
+    sorted_customers = dict(
+        sorted(customer_data.items(),
+               key=lambda x: x[1]["total_spent"],
+               reverse=True)
+    )
+
+    return sorted_customers
+
+def daily_sales_trend(transactions):
+    daily_data = {}
+
+    for tx in transactions:
+        date = tx["Date"]
+        amount = tx["Quantity"] * tx["UnitPrice"]
+        customer = tx["CustomerID"]
+
+        if date not in daily_data:
+            daily_data[date] = {
+                "revenue": 0.0,
+                "transaction_count": 0,
+                "customers": set()
+            }
+
+        daily_data[date]["revenue"] += amount
+        daily_data[date]["transaction_count"] += 1
+        daily_data[date]["customers"].add(customer)
+
+    # Format output
+    result = {}
+    for date in sorted(daily_data.keys()):
+        result[date] = {
+            "revenue": daily_data[date]["revenue"],
+            "transaction_count": daily_data[date]["transaction_count"],
+            "unique_customers": len(daily_data[date]["customers"])
+        }
+
+    return result
+
+def find_peak_sales_day(transactions):
+    daily = daily_sales_trend(transactions)
+
+    peak_date = None
+    max_revenue = 0
+    tx_count = 0
+
+    for date, data in daily.items():
+        if data["revenue"] > max_revenue:
+            max_revenue = data["revenue"]
+            peak_date = date
+            tx_count = data["transaction_count"]
+
+    return (peak_date, max_revenue, tx_count)
+
+def low_performing_products(transactions, threshold=10):
+    product_data = {}
+
+    for tx in transactions:
+        product = tx["ProductName"]
+        qty = tx["Quantity"]
+        amount = qty * tx["UnitPrice"]
+
+        if product not in product_data:
+            product_data[product] = {
+                "quantity": 0,
+                "revenue": 0.0
+            }
+
+        product_data[product]["quantity"] += qty
+        product_data[product]["revenue"] += amount
+
+    result = []
+    for product, data in product_data.items():
+        if data["quantity"] < threshold:
+            result.append((product, data["quantity"], data["revenue"]))
+
+    # Sort by quantity ascending
+    result.sort(key=lambda x: x[1])
+
+    return result
+
