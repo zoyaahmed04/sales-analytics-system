@@ -1,3 +1,5 @@
+# Handles reading sales data with multiple encodings
+
 def read_sales_data(filename):
     """
     Reads sales data from file handling encoding issues
