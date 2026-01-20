@@ -27,3 +27,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+from utils.data_processor import generate_sales_report
+
+generate_sales_report(valid_tx, enriched_transactions)
+
