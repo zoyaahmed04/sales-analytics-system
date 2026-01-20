@@ -2,7 +2,7 @@
 
 ## Overview
 This project is a Python-based Sales Data Analytics System developed to clean,
-validate, and analyze sales transaction data for an e-commerce company.
+validate, and analyze sales transaction data for e-commerce insights.
 
 ## Features
 - Reads non-UTF-8 encoded sales data files
