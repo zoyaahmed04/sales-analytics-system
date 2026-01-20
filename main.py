@@ -1,27 +1,25 @@
-from utils.file_handler import read_sales_file
-from utils.data_processor import clean_sales_data
-from utils.api_handler import fetch_product_info
+from utils.file_handler import read_sales_data
+from utils.data_processor import parse_transactions, validate_and_filter
 
 
 def main():
-    # Read raw sales data
-    raw_data = read_sales_file("data/sales_data.txt")
+    raw_lines = read_sales_data("data/sales_data.txt")
+    transactions = parse_transactions(raw_lines)
 
-    # Clean and validate data
-    cleaned_data = clean_sales_data(raw_data)
+    valid_tx, invalid_count, summary = validate_and_filter(
+        transactions,
+        region=None,
+        min_amount=None,
+        max_amount=None
+    )
 
-    # Example API usage (demo purpose)
-    if cleaned_data:
-        sample_product = cleaned_data[0][3]
-        info = fetch_product_info(sample_product)
-        print("Sample product info:", info)
+    print("Summary:", summary)
 
-    # Write cleaned output to file
+    # Write cleaned data
     with open("output/cleaned_sales.txt", "w") as f:
-        for row in cleaned_data:
-            f.write("|".join(map(str, row)) + "\n")
+        for tx in valid_tx:
+            f.write(str(tx) + "\n")
 
 
 if __name__ == "__main__":
     main()
-
