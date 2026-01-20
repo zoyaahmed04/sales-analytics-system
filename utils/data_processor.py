@@ -1,3 +1,5 @@
+# Data parsing, validation, analysis, and reporting functions
+
 def parse_transactions(raw_lines):
     """
     Parses raw sales lines into clean list of dictionaries
