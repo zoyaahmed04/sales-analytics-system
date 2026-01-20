@@ -1,3 +1,5 @@
+# Main entry point for the Sales Analytics System
+
 from utils.file_handler import read_sales_data
 from utils.data_processor import (
     parse_transactions,
