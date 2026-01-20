@@ -1,3 +1,5 @@
+# Handles DummyJSON API integration and data enrichment
+
 import requests
 
 
