@@ -296,3 +296,132 @@ def low_performing_products(transactions, threshold=10):
 
     return result
 
+from datetime import datetime
+
+
+def generate_sales_report(transactions, enriched_transactions, output_file="output/sales_report.txt"):
+    # ---- HEADER ----
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    total_records = len(transactions)
+
+    # ---- OVERALL SUMMARY ----
+    total_revenue = calculate_total_revenue(transactions)
+    total_transactions = len(transactions)
+    avg_order_value = total_revenue / total_transactions if total_transactions else 0
+
+    dates = [tx["Date"] for tx in transactions]
+    date_range = f"{min(dates)} to {max(dates)}" if dates else "N/A"
+
+    # ---- REGION PERFORMANCE ----
+    regions = region_wise_sales(transactions)
+
+    # ---- TOP PRODUCTS ----
+    top_products = top_selling_products(transactions, n=5)
+
+    # ---- TOP CUSTOMERS ----
+    customers = customer_analysis(transactions)
+    top_customers = list(customers.items())[:5]
+
+    # ---- DAILY TREND ----
+    daily_trend = daily_sales_trend(transactions)
+
+    # ---- PRODUCT PERFORMANCE ----
+    peak_day, peak_revenue, peak_tx_count = find_peak_sales_day(transactions)
+    low_products = low_performing_products(transactions)
+
+    # Avg transaction value per region
+    avg_region_value = {}
+    for region, data in regions.items():
+        avg_region_value[region] = data["total_sales"] / data["transaction_count"]
+
+    # ---- API ENRICHMENT SUMMARY ----
+    total_enriched = len(enriched_transactions)
+    success = [tx for tx in enriched_transactions if tx.get("API_Match")]
+    failed = [tx for tx in enriched_transactions if not tx.get("API_Match")]
+
+    success_rate = (len(success) / total_enriched * 100) if total_enriched else 0
+    failed_products = list(set(tx["ProductName"] for tx in failed))
+
+    # ---- WRITE REPORT ----
+    with open(output_file, "w") as f:
+        f.write("=" * 50 + "\n")
+        f.write("        SALES ANALYTICS REPORT\n")
+        f.write(f"   Generated: {now}\n")
+        f.write(f"   Records Processed: {total_records}\n")
+        f.write("=" * 50 + "\n\n")
+
+        f.write("OVERALL SUMMARY\n")
+        f.write("-" * 50 + "\n")
+        f.write(f"Total Revenue:        ₹{total_revenue:,.2f}\n")
+        f.write(f"Total Transactions:   {total_transactions}\n")
+        f.write(f"Average Order Value:  ₹{avg_order_value:,.2f}\n")
+        f.write(f"Date Range:           {date_range}\n\n")
+
+        f.write("REGION-WISE PERFORMANCE\n")
+        f.write("-" * 50 + "\n")
+        f.write("Region    Sales        % of Total   Transactions\n")
+        for region, data in regions.items():
+            f.write(
+                f"{region:<9} ₹{data['total_sales']:>10,.0f}   "
+                f"{data['percentage']:>6.2f}%        {data['transaction_count']}\n"
+            )
+        f.write("\n")
+
+        f.write("TOP 5 PRODUCTS\n")
+        f.write("-" * 50 + "\n")
+        f.write("Rank  Product Name              Qty   Revenue\n")
+        for i, (name, qty, rev) in enumerate(top_products, start=1):
+            f.write(f"{i:<5} {name:<25} {qty:<5} ₹{rev:,.0f}\n")
+        f.write("\n")
+
+        f.write("TOP 5 CUSTOMERS\n")
+        f.write("-" * 50 + "\n")
+        f.write("Rank  Customer ID   Total Spent    Orders\n")
+        for i, (cid, data) in enumerate(top_customers, start=1):
+            f.write(
+                f"{i:<5} {cid:<12} ₹{data['total_spent']:>10,.0f}    "
+                f"{data['purchase_count']}\n"
+            )
+        f.write("\n")
+
+        f.write("DAILY SALES TREND\n")
+        f.write("-" * 50 + "\n")
+        f.write("Date         Revenue       Tx   Customers\n")
+        for date, data in daily_trend.items():
+            f.write(
+                f"{date}   ₹{data['revenue']:>10,.0f}   "
+                f"{data['transaction_count']:<4} {data['unique_customers']}\n"
+            )
+        f.write("\n")
+
+        f.write("PRODUCT PERFORMANCE ANALYSIS\n")
+        f.write("-" * 50 + "\n")
+        f.write(f"Best Selling Day: {peak_day} (₹{peak_revenue:,.0f}, {peak_tx_count} transactions)\n\n")
+
+        f.write("Low Performing Products:\n")
+        if low_products:
+            for name, qty, rev in low_products:
+                f.write(f"- {name}: {qty} units, ₹{rev:,.0f}\n")
+        else:
+            f.write("None\n")
+        f.write("\n")
+
+        f.write("Average Transaction Value per Region:\n")
+        for region, value in avg_region_value.items():
+            f.write(f"- {region}: ₹{value:,.2f}\n")
+        f.write("\n")
+
+        f.write("API ENRICHMENT SUMMARY\n")
+        f.write("-" * 50 + "\n")
+        f.write(f"Total Products Enriched: {total_enriched}\n")
+        f.write(f"Success Rate: {success_rate:.2f}%\n")
+        f.write("Products Not Enriched:\n")
+        if failed_products:
+            for p in failed_products:
+                f.write(f"- {p}\n")
+        else:
+            f.write("None\n")
+
+    print("Sales report generated at", output_file)
+
+
