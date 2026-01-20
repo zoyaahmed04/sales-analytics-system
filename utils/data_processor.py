@@ -1,17 +1,15 @@
-def clean_sales_data(raw_records):
-    valid_records = []
-    invalid_count = 0
+def parse_transactions(raw_lines):
+    """
+    Parses raw sales lines into clean list of dictionaries
+    """
 
-    for index, record in enumerate(raw_records):
-        # Skip header row
-        if index == 0:
-            continue
+    transactions = []
 
-        parts = record.split("|")
+    for line in raw_lines:
+        parts = line.split("|")
 
-        # Must have exactly 8 fields
+        # Skip rows with incorrect number of fields
         if len(parts) != 8:
-            invalid_count += 1
             continue
 
         (
@@ -25,43 +23,26 @@ def clean_sales_data(raw_records):
             region
         ) = parts
 
-        # Validation rules
-        if not customer_id or not region:
-            invalid_count += 1
-            continue
-
-        if not transaction_id.startswith("T"):
-            invalid_count += 1
-            continue
-
         # Clean product name (remove commas)
         product_name = product_name.replace(",", "")
 
         try:
             quantity = int(quantity.replace(",", ""))
             unit_price = float(unit_price.replace(",", ""))
-        except:
-            invalid_count += 1
+        except ValueError:
             continue
 
-        if quantity <= 0 or unit_price <= 0:
-            invalid_count += 1
-            continue
+        transaction = {
+            "TransactionID": transaction_id,
+            "Date": date,
+            "ProductID": product_id,
+            "ProductName": product_name,
+            "Quantity": quantity,
+            "UnitPrice": unit_price,
+            "CustomerID": customer_id,
+            "Region": region
+        }
 
-        valid_records.append([
-            transaction_id,
-            date,
-            product_id,
-            product_name,
-            quantity,
-            unit_price,
-            customer_id,
-            region
-        ])
+        transactions.append(transaction)
 
-    print("Total records parsed:", len(raw_records) - 1)
-    print("Invalid records removed:", invalid_count)
-    print("Valid records after cleaning:", len(valid_records))
-
-    return valid_records
-
+    return transactions
